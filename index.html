@@ -20,7 +20,6 @@
       width: 120px;
       height: 120px;
       border-radius: 50%;
-      overflow: hidden;
       flex: 0 0 120px;
       border: 3px solid #E5E7EB;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -43,6 +42,10 @@
   --muted:#667085;     /* secondary text */
   --line:#E5E7EB;      /* borders */
   --white:#fff;
+  --chat-avatar-size: 32px;
+  --chat-avatar-font: 11px;
+  --chat-avatar-size: 40px;  /* Adjust this to change avatar size */
+  --chat-avatar-font: 11px;  /* Adjust this to change avatar text size */
     }
     html,body{margin:0;padding:0;color:var(--ink);font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;line-height:1.6;background:var(--sand)}
     .serif{font-family: Georgia, "Times New Roman", Times, serif}
@@ -57,7 +60,8 @@
     header.navbar{
       position:sticky;
       top:0;
-      z-index:5;
+      z-index:1000;
+      isolation:isolate;
       margin:0 16px;
       border-radius:0 0 14px 14px;
       padding:0.25rem;
@@ -65,22 +69,61 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     header.navbar .wrap{
+      position:relative;
+      z-index:1;
       display:flex;
       justify-content:space-between;
       align-items:center;
       padding:0.5rem 1.2rem;
       border-radius:10px;
       background:var(--white);
+      height:80px;
+      box-sizing:border-box;
     }
     .logo{display:flex;align-items:center;gap:.6rem;font-weight:700;color:var(--navy)}
-    .logo-mark{width:80px;height:80px;display:block}
+    .logo-mark{width:250px;height:320px;display:block}
     .logo-mark img {width:100%;height:100%;object-fit:contain}
     nav a{margin-left:1rem;color:var(--muted);text-decoration:none}
     nav a.active, nav a:hover{color:var(--navy)}
 
     /* hero */
-    .hero{background:linear-gradient(180deg,#ffffff, #f7fafc); padding:3.75rem 0;border-bottom:1px solid var(--line)}
+    .hero{background:linear-gradient(180deg,#ffffff, #f7fafc); padding:2.5rem 0;border-bottom:1px solid var(--line)}
     .hero .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:2rem;align-items:center}
+    .hero-logo{
+      position:relative;
+      display:block;
+      width:min(100%, 620px);
+      aspect-ratio:866 / 255;
+      margin:0 0 0.2rem;
+      overflow:hidden;
+      line-height:0;
+    }
+    .hero-logo img{
+      position:absolute;
+      top:0;
+      left:0;
+      width:118%;
+      max-width:none;
+      height:auto;
+      display:block;
+      transform:translate(-7.6%, -36.5%);
+      transform-origin:top left;
+    }
+    .hero-photo{
+      aspect-ratio:7 / 9;
+      padding:0.25rem;
+      max-width:110%;
+      margin-left:-15%;
+    }
+    .hero-photo img{
+      width:120%;
+      height:100%;
+      display:block;
+      object-fit:contain;
+      object-position:center;
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 42%, rgba(0,0,0,0) 72%);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 72%, rgba(0,0,0,0) 100%);
+    }
     .hero h1{font-size:clamp(1.8rem,4.5vw,3rem);line-height:1.15;color:var(--navy)}
     .hero p{color:var(--muted);font-size:1.06rem}
     .card{background:var(--white);border:1px solid var(--line);border-radius:1rem;padding:1rem}
@@ -186,6 +229,12 @@
       overflow-y: auto;
       text-align: center;
       border: 1px solid var(--line);
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* Internet Explorer 10+ */
+    }
+    
+    .modal-content::-webkit-scrollbar {
+      display: none; /* Safari and Chrome */
     }
     .modal .avatar {
       width: 140px;
@@ -342,6 +391,115 @@
     }
     .skip{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
     .skip:focus{position:static;width:auto;height:auto;background:var(--teal);padding:.25rem .5rem;color:var(--navy)}
+
+    /* Slideshow Styles */
+    .slideshow-card {
+      position: relative;
+      z-index: 0;
+      overflow: hidden;
+      height: 100%;
+      border-radius: 0.5rem;
+      border: 1px solid var(--line);
+    }
+
+    .slideshow-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 500px;
+      background: #f0f0f0;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+
+    .slide.active {
+      opacity: 1;
+    }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      display: block;
+    }
+
+    .slideshow-nav {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      transform: translateY(-50%);
+      display: flex;
+      justify-content: space-between;
+      padding: 0 15px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .slideshow-card:hover .slideshow-nav {
+      opacity: 1;
+    }
+
+    .slide-arrow {
+      background: rgba(15, 52, 70, 0.8);
+      color: white;
+      border: none;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      pointer-events: auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .slide-arrow:hover {
+      background: rgba(15, 52, 70, 1);
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .slide-arrow:active {
+      transform: scale(0.95);
+    }
+
+    /* About Us section - equal height columns */
+    #about .grid-2 {
+      align-items: stretch;
+    }
+
+    #about .grid-2 > .card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Auto-advance slideshow */
+    .slideshow-container {
+      animation-play-state: running;
+    }
+
+    .slideshow-card:hover .slideshow-container {
+      animation-play-state: paused;
+    }
+
+
   </style>
 </head>
 <body>
@@ -350,7 +508,7 @@
   <header class="navbar" role="navigation" aria-label="Main">
     <div class="container wrap">
       <a class="logo" href="#home">
-        <span class="logo-mark"><img src="SalmonBlack.png" alt="Salmon & Co Solicitors logo with scales of justice"></span>
+        <span class="logo-mark"><img src="Images/Logo.png" alt="Salmon & Co Solicitors logo with scales of justice"></span>
       </a>
       <nav>
         <a href="#about">About Us</a>
@@ -366,11 +524,13 @@
     <section class="hero" id="home" style="border-radius: 14px 14px 0 0;">
       <div class="container grid grid-2 grid-hero">
         <div>
-          <h1 class="serif">Prompt, Skilled &amp; Affordable Legal Help.</h1>
+          <div class="hero-logo">
+            <img src="Images/Logo.png" alt="Salmon &amp; Co Solicitors logo with scales of justice">
+          </div>
+          <h1 class="serif">Prompt, Skilled &amp; Reliable Legal Help.</h1>
           <p>Operating from Greenacre in Sydney's south west, Salmon &amp; Co is a well‑established, respected firm with more than 30 years' experience providing quality legal services across a range of practice areas.</p>
           <div style="display:flex;gap:.75rem;margin-top:1rem">
-            <a href="#contact" class="btn primary" aria-label="Book a consultation">Request a Consultation</a>
-            <a href="#services" class="btn ghost" aria-label="View services">Explore Services</a>
+            <a href="#services" class="btn primary" aria-label="View services">Explore Services</a>
           </div>
           <div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap">
             <span class="badge">🏛️ Admitted Solicitors</span>
@@ -379,16 +539,39 @@
           </div>
         </div>
         <div>
-          <div style="aspect-ratio: 16/12; padding: 1rem; max-width: 120%; margin-left: -10%;" aria-hidden="true">
+          <div class="hero-photo" aria-hidden="true">
             <img 
-              src="scales-justice-antique-law-books.png" 
-              alt="Scales of justice balanced on antique law books symbolizing legal wisdom and justice" 
-              style="width:100%; height:100%; object-fit:contain;"
+              src="Images/Double Shot.png" 
+              alt="Terry Salmon" 
             />
           </div>
         </div>
       </div>
     </section>
+
+    <section id="team" aria-labelledby="team-title" class="attorneys" style="background:#fff;border-top:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB">
+      <div class="container">
+        <h2 id="team-title" class="section-title">Meet Our Team</h2>
+        <div class="grid-2">
+          <article class="card person" onclick="openModal('terry-modal')">
+            <div class="avatar"><img src="Images/Terry.png" alt="Terry Salmon"></div>
+            <div>
+              <h3 class="serif">Terry Salmon LL.B.</h3>
+              <p class="subtle">Click to read more about Terry...</p>
+            </div>
+          </article>
+          <article class="card person" onclick="openModal('vivianne-modal')">
+            <div class="avatar"><img src="Images/Sidhomne.png" alt="Vivianne Sidhom"></div>
+            <div>
+              <h3 class="serif">Vivianne Sidhom LL.B B.Sc.</h3>
+              <p class="subtle">Click to read more about Vivianne...</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+
 
     <section id="services" aria-labelledby="services-title" class="practice">
       <div class="container">
@@ -410,7 +593,7 @@
         <article class="card tile practice-card" onclick="openModal('family-modal')">
           <img
             alt="Family and criminal law"
-            src="family.jpg"
+            src="Images/family.jpg"
             loading="lazy" decoding="async"
           />
           <h3 class="serif" style="margin:.2rem 0">Family &amp; Criminal Law</h3>
@@ -603,34 +786,14 @@
     </div>
     </section>
 
-    <section id="team" aria-labelledby="team-title" class="attorneys" style="background:#fff;border-top:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB">
-      <div class="container">
-        <h2 id="team-title" class="section-title">Meet Our Team</h2>
-        <div class="grid-2">
-          <article class="card person" onclick="openModal('terry-modal')">
-            <div class="avatar"><img src="Terry Salmon.webp" alt="Terry Salmon"></div>
-            <div>
-              <h3 class="serif">Terry Salmon LL.B.</h3>
-              <p class="subtle">Click to read more about Terry...</p>
-            </div>
-          </article>
-          <article class="card person" onclick="openModal('vivianne-modal')">
-            <div class="avatar"><img src="Vivianne Sidhom.webp" alt="Vivianne Sidhom"></div>
-            <div>
-              <h3 class="serif">Vivianne Sidhom LL.B B.Sc.</h3>
-              <p class="subtle">Click to read more about Vivianne...</p>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
+
 
     <!-- Team Member Modals -->
     <div id="terry-modal" class="modal" onclick="closeModal('terry-modal')">
       <div class="modal-content" onclick="event.stopPropagation()">
         <button class="modal-close" onclick="closeModal('terry-modal')">&times;</button>
         <div class="modal-header">
-          <div class="avatar"><img src="Terry Salmon.webp" alt="Terry Salmon"></div>
+          <div class="avatar"><img src="Images/Terry.png" alt="Terry Salmon"></div>
           <h2 class="serif">Terry Salmon</h2>
           <p class="modal-qualifications">LL.B. (Bachelor of Laws)</p>
         </div>
@@ -643,6 +806,20 @@
             <li style="margin-bottom: 0.5rem">Family Law</li>
           </ul>
           <p>His commitment to providing practical, cost-effective legal solutions has earned him a reputation for excellence in Sydney's legal community.</p>
+          
+          <div style="margin-top: 2rem;">
+            <h4 style="color: var(--navy); margin-bottom: 1rem; text-align: center;">Educational Qualifications</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+              <div style="text-align: center;">
+                <img src="Images/Usyd.png" alt="University of Sydney Bachelor of Laws degree certificate for Terrence Patrick Salmon" style="width: 100%; max-width: 250px; height: auto; border: 1px solid var(--line); border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <p style="font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; font-style: italic;">Bachelor of Laws, University of Sydney (1975)</p>
+              </div>
+              <div style="text-align: center;">
+                <img src="Images/CollegeOfLaw.png" alt="College of Law certificate for Terrence Patrick Salmon" style="width: 100%; max-width: 250px; height: auto; border: 1px solid var(--line); border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+                <p style="font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; font-style: italic;">College of Law Certification (1975)</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -651,7 +828,7 @@
       <div class="modal-content" onclick="event.stopPropagation()">
         <button class="modal-close" onclick="closeModal('vivianne-modal')">&times;</button>
         <div class="modal-header">
-          <div class="avatar"><img src="Vivianne Sidhom.webp" alt="Vivianne Sidhom"></div>
+          <div class="avatar"><img src="Images/Sidhomne.png" alt="Vivianne Sidhom"></div>
           <h2 class="serif">Vivianne Sidhom</h2>
           <p class="modal-qualifications">LL.B. (Bachelor of Laws), B.Sc. (Bachelor of Science)</p>
         </div>
@@ -673,21 +850,54 @@
         <h2 id="about-title" class="section-title">About Us</h2>
         <div class="grid-2">
           <div class="card">
-            <p><strong>Salmon &amp; Co Solicitors</strong> is a well-established and respected practice with more than 30 years' experience serving individuals, families, and businesses across Sydney's south-west. We combine deep legal expertise with plain-English advice, so you always understand your options and the path forward.</p>
+            
+          <p><strong>Salmon &amp; Co Solicitors</strong> is a well-established and respected practice with more than 30 years' experience serving individuals, families, and businesses across Sydney's south-west. Founded in <strong>1982</strong>, we are the <strong>longest-standing solicitors in Sydney’s west</strong>, proudly based in Greenacre. We combine deep legal expertise with plain-English advice, so you always understand your options and the path forward.</p>
 
-            <p>We pride ourselves on the <em>prompt, efficient, and affordable</em> delivery of quality legal services across a broad range of practice areas, including Wills &amp; Estates, Family Law, Criminal &amp; Local Court matters, Property and Conveyancing (residential and commercial), Business &amp; Commercial Law, and Mortgages &amp; Loans.</p>
-            <p> <strong> <em> Our approach is practical and outcomes-focused: clear communication, timely updates, and careful attention to detail at every step.</strong></em></p>
+<p>We pride ourselves on the <em>prompt, efficient, and affordable</em> delivery of quality legal services across a broad range of practice areas, including Wills &amp; Estates, Family Law, Criminal &amp; Local Court matters, Property and Conveyancing (residential and commercial), Business &amp; Commercial Law, and Mortgages &amp; Loans.</p>
 
-            <p>Conveniently located in the centre of the Greenacre shopping strip, our office offers easy access and free parking. For your convenience, we can also meet at your home or business, or in our Sydney city office. Whatever the matter, you can expect discretion, professionalism, and steadfast advocacy from a team committed to achieving the best result for you.</p>
+<p><strong><em>Our approach is practical and outcomes-focused: clear communication, timely updates, and careful attention to detail at every step.</em></strong></p>
+
+<p>Conveniently located in the centre of the Greenacre shopping strip, our office offers easy access and free parking. For your convenience, we can also meet at your home or business, or in our Sydney city office. Whatever the matter, you can expect discretion, professionalism, and steadfast advocacy from a team committed to achieving the best result for you.</p>
+
+          
           </div>
-          <div class="card" aria-hidden="true">
-            <img 
-              src="https://images.unsplash.com/photo-1589578527966-fdac0f44566c" 
-              alt="Wooden gavel on a dark background symbolizing law and justice" 
-              style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;"
-              loading="lazy"
-              decoding="async"
-            />
+          <div class="card slideshow-card" aria-hidden="true">
+            <div class="slideshow-container">
+              <div class="slide active">
+                <img 
+                  src="Images/TerryFullBody.png" 
+                  alt="Terry Salmon, Principal Solicitor in professional attire at Salmon & Co office" 
+                />
+              </div>
+              <div class="slide">
+                <img 
+                  src="Images/Receptionist.png" 
+                  alt="Professional reception area at Salmon & Co Solicitors office" 
+                />
+              </div>
+              <div class="slide">
+                <img 
+                  src="Images/Clients.png" 
+                  alt="Client consultation meeting at Salmon & Co Solicitors" 
+                />
+              </div>
+              <div class="slide">
+                <img 
+                  src="Images/Client2.png" 
+                  alt="Professional consultation in Terry Salmon's office" 
+                />
+              </div>
+              <div class="slide">
+                <img
+                  src="Images/Viv.JPG"
+                  alt="Vivianne Sidhom at Salmon & Co Solicitors"
+                />
+              </div>
+              <div class="slideshow-nav">
+                <button class="slide-arrow slide-prev" onclick="event.stopPropagation(); changeSlide(-1);">&lt;</button>
+                <button class="slide-arrow slide-next" onclick="event.stopPropagation(); changeSlide(1);">&gt;</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -704,8 +914,8 @@
         <div>
           <div class="card">
             <h3 class="serif">Address &amp; Mail</h3>
-            <p>157A Waterloo Rd<br/>Greenacre NSW 2190</p>
-            <p>DX 1508 SYDNEY<br/>PO Box 34 Greenacre NSW 2190</p>
+            <p>Suite 3, Level 1/159 Waterloo Rd<br/>Greenacre NSW 2190</p>
+            <p>Sydney, Australia<br/>PO Box 34 Greenacre NSW 2190</p>
             <hr>
             <h3 class="serif">Phone</h3>
             <p>Tel (02) 9750 7511<br/>Fax (02) 9750 2730</p>
@@ -714,12 +924,11 @@
             <h3 class="serif">Email</h3>
             <p>Email Terry: <a href="mailto:tsalmon@salmonssolicitors.com.au">tsalmon@salmonssolicitors.com.au</a></p>
             <p>Email Vivianne: <a href="mailto:vsidhom@salmonssolicitors.com.au">vsidhom@salmonssolicitors.com.au</a></p>
-            <p class="subtle" style="margin-top:1rem">For a <strong>confidential consultation</strong>, please email us at <a href="mailto:office@salmonssolicitors.com.au">office@salmonssolicitors.com.au</a>.</p>
           </div>
         </div>
         <div class="card" style="height:100%">
           <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3311.4023289410846!2d151.0615445!3d-33.9114073!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b12bb9f76523e81%3A0x44fe4a0a4b16c2d1!2s157A%20Waterloo%20Rd%2C%20Greenacre%20NSW%202190!5e0!3m2!1sen!2sau!4v1693796429932!5m2!1sen!2sau" 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3311.3954813965867!2d151.06010047681843!3d-33.91147607327164!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b12bb9f76523e81%3A0xfa7a871f5ef946d9!2sSalmon%20%26%20Co!5e0!3m2!1sen!2sau!4v1731236589283!5m2!1sen!2sau" 
             style="border:0; width:100%; height:100%; min-height:400px; border-radius:var(--radius)" 
             allowfullscreen="" 
             loading="lazy" 
@@ -733,15 +942,21 @@
 
   <footer role="contentinfo">
     <div class="container footgrid">
-      <div><div class="logo"><span class="logo-mark"><img src="Salmon.png" alt="Salmon & Co Solicitors logo" style="filter: brightness(0) invert(1);"></span></div><p class="disclaimer">This website provides general information only and does not constitute legal advice...</p></div>
-      <div><h4>Contact</h4><p>📍 157A Waterloo Rd, Greenacre NSW 2190<br/>📞 (02) 9750 7511</p></div>
+      <div><div class="logo"><span class="logo-mark"><img src="Images/Salmon.png" alt="Salmon & Co Solicitors logo" style="filter: brightness(0) invert(1);"></span></div><p class="disclaimer"><i><em>This website provides general information only and does not constitute legal advice...</em></i></p></div>
+      <div><h4>Contact</h4><p>📍 Suite 3, Level 1/159 Waterloo Rd, Greenacre NSW 2190<br/>📞 (02) 9750 7511<br/>📠 (02) 9750 2730<br/>✉️ <a href="mailto:tsalmon@salmonssolicitors.com.au">tsalmon@salmonssolicitors.com.au</a><br/>✉️ <a href="mailto:vsidhom@salmonssolicitors.com.au">vsidhom@salmonssolicitors.com.au</a></p></div>
       <div><h4>Follow Us</h4><p><a href="#">LinkedIn</a><br><a href="#">Facebook</a></p></div>
     </div>
     <div class="container" style="border-top:1px solid rgba(255,255,255,.15);margin-top:1rem;padding-top:1rem;font-size:.9rem;color:#94A3B8">© <span id="y"></span> Salmon &amp; Co Solicitors. All rights reserved.</div>
   </footer>
 
   <script>
-    document.getElementById('y').textContent = new Date().getFullYear();
+    // Set year when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      const yearElement = document.getElementById('y');
+      if (yearElement) {
+        yearElement.textContent = new Date().getFullYear();
+      }
+    });
     
     // Modal functionality
     function openModal(modalId) {
@@ -757,12 +972,15 @@
     // Close modal with Escape key
     document.addEventListener('keydown', function(event) {
       if (event.key === 'Escape') {
-        document.querySelectorAll('.modal.active').forEach(modal => {
-          closeModal(modal.id);
+        const activeModals = document.querySelectorAll('.modal.active');
+        activeModals.forEach(modal => {
+          if (modal && modal.id) {
+            closeModal(modal.id);
+          }
         });
         // Also close mobile menu on escape
         const mobileMenu = document.querySelector('.mobile-menu');
-        if (mobileMenu.classList.contains('active')) {
+        if (mobileMenu && mobileMenu.classList.contains('active')) {
           toggleMobileMenu();
         }
       }
@@ -771,6 +989,8 @@
     // Mobile menu functionality
     function toggleMobileMenu() {
       const mobileMenu = document.querySelector('.mobile-menu');
+      if (!mobileMenu) return;
+      
       mobileMenu.classList.toggle('active');
       
       // Close menu when clicking outside
@@ -785,29 +1005,150 @@
       const mobileMenu = document.querySelector('.mobile-menu');
       const mobileMenuButton = document.querySelector('.mobile-menu-button');
       
-      if (!mobileMenu.contains(event.target) && !mobileMenuButton.contains(event.target)) {
+      if (mobileMenu && mobileMenuButton && 
+          !mobileMenu.contains(event.target) && 
+          !mobileMenuButton.contains(event.target)) {
         mobileMenu.classList.remove('active');
         document.removeEventListener('click', closeMenuOutside);
       }
     }
 
     // Close mobile menu when clicking a link
-    document.querySelector('.mobile-menu').addEventListener('click', function(event) {
-      if (event.target.tagName === 'A') {
-        toggleMobileMenu();
+    const mobileMenu = document.querySelector('.mobile-menu');
+    if (mobileMenu) {
+      mobileMenu.addEventListener('click', function(event) {
+        if (event.target.tagName === 'A') {
+          toggleMobileMenu();
+        }
+      });
+    }
+
+    // Slideshow functionality
+    var currentSlide = 0;
+    var isInitialized = false;
+
+    function changeSlide(direction) {
+      console.log('changeSlide called with direction:', direction);
+      
+      // Ensure slideshow is initialized first
+      if (!isInitialized) {
+        console.log('Slideshow not initialized, initializing now...');
+        initializeSlideshow();
+        return;
+      }
+      
+      const slides = document.querySelectorAll('.slide');
+      console.log('Found slides:', slides.length);
+      
+      if (slides.length === 0) {
+        console.log('No slides found');
+        return;
+      }
+
+      // Ensure currentSlide is within bounds
+      if (currentSlide >= slides.length) {
+        currentSlide = 0;
+      }
+
+      // Remove active class from current slide
+      slides[currentSlide].classList.remove('active');
+      console.log('Removed active from slide:', currentSlide);
+      
+      // Calculate new slide index
+      currentSlide = (currentSlide + direction + slides.length) % slides.length;
+      console.log('New slide index:', currentSlide);
+      
+      // Add active class to new slide
+      slides[currentSlide].classList.add('active');
+      console.log('Added active to slide:', currentSlide);
+    }
+
+    function initializeSlideshow() {
+      console.log('Initializing slideshow...');
+      
+      const slides = document.querySelectorAll('.slide');
+      console.log('Found slides during init:', slides.length);
+      
+      if (slides.length === 0) {
+        console.log('No slides found, retrying in 100ms');
+        setTimeout(initializeSlideshow, 100);
+        return;
+      }
+
+      // Reset to first slide
+      currentSlide = 0;
+      
+      // Ensure first slide is active
+      slides.forEach((slide, index) => {
+        slide.classList.toggle('active', index === 0);
+        console.log('Slide', index, 'active:', index === 0);
+      });
+      
+      isInitialized = true;
+      console.log('Slideshow initialized successfully with currentSlide:', currentSlide);
+      
+      // Start auto-advance
+      startAutoSlideshow();
+    }
+    
+    // Auto-advance slideshow functionality
+    let slideshowInterval;
+    let isHovered = false;
+    
+    function startAutoSlideshow() {
+      if (slideshowInterval) {
+        clearInterval(slideshowInterval);
+      }
+      
+      slideshowInterval = setInterval(() => {
+        if (!isHovered && isInitialized) {
+          changeSlide(1);
+        }
+      }, 4000); // Change slide every 4 seconds
+      
+      console.log('Auto-slideshow started');
+    }
+    
+    function stopAutoSlideshow() {
+      if (slideshowInterval) {
+        clearInterval(slideshowInterval);
+        console.log('Auto-slideshow stopped');
+      }
+    }
+    
+    // Add hover event listeners to pause auto-advance
+    document.addEventListener('DOMContentLoaded', function() {
+      const slideshowCard = document.querySelector('.slideshow-card');
+      
+      if (slideshowCard) {
+        slideshowCard.addEventListener('mouseenter', function() {
+          isHovered = true;
+          console.log('Slideshow paused - mouse hover');
+        });
+        
+        slideshowCard.addEventListener('mouseleave', function() {
+          isHovered = false;
+          console.log('Slideshow resumed - mouse left');
+        });
       }
     });
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeSlideshow);
+    } else {
+      initializeSlideshow();}
   </script>
 
-  <!-- Chat Bubble -->
+  <!-- Chat Bubble - DISABLED -->
   <style>
-  #salmon-bubble{position:fixed;right:20px;bottom:20px;z-index:9999}
+  #salmon-bubble{position:fixed;right:20px;bottom:20px;z-index:9999;display:none}
   #salmon-bubble button {
     width:70px;
     height:70px;
     border-radius:50%;
     border:0;
-    background-color: #0F3446;
+    background-color: #265972;
     background-image: url('Chatbubble.png');
     background-size: 60%;
     background-position: center;
@@ -819,21 +1160,84 @@
   #salmon-bubble button:hover {
     transform: scale(1.1);
   }
-  #salmon-panel{position:fixed;right:20px;bottom:102px;width:340px;max-height:60vh;background:#fff;border:1px solid #ddd;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;overflow:hidden;font:14px system-ui}
-  #salmon-head{padding:10px 12px;border-bottom:1px solid #eee;font-weight:600}
-  #salmon-msgs{padding:12px;height:300px;overflow:auto}
-  #salmon-form{display:flex;gap:6px;padding:8px;border-top:1px solid #eee;background:#fafafa}
-  #salmon-form input{flex:1;padding:10px;border:1px solid #ddd;border-radius:10px}
-  #salmon-form button{padding:10px 12px;border:0;border-radius:10px;background:#111;color:#fff;cursor:pointer}
+  #salmon-panel{position:fixed;right:20px;bottom:102px;width:460px;max-height:75vh;background:#fff;border:1px solid #ddd;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;overflow:hidden;font:15px system-ui}
+  #salmon-head{padding:16px;border-bottom:1px solid #eee;font-weight:600}
+  #salmon-msgs{padding:20px;height:450px;overflow:auto}
+  #salmon-msgs .msg{display:flex;gap:12px;margin:16px 0;align-items:flex-start}
+  #salmon-msgs .msg .avatar{
+    min-width: var(--chat-avatar-size) !important;
+    width: var(--chat-avatar-size) !important;
+    height: var(--chat-avatar-size) !important;
+    border-radius: 9999px !important;
+    flex: none !important;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: var(--chat-avatar-font);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: none !important;
+  }
+  #salmon-msgs .msg.user .avatar{
+    background:#E1F0FF;
+    color:#0066CC;
+  }
+  #salmon-msgs .msg.bot .avatar{
+    background:#1B4965;
+    color:#ffffff;
+  }
+  #salmon-msgs .content{
+    flex:1;
+    background:#F8F8F8;
+    padding:12px 16px;
+    border-radius:12px;
+    position:relative;
+    margin-top:0;
+  }
+  #salmon-msgs .user .content{
+    background:#E1F0FF;
+  }
+  #salmon-msgs .bot .content{
+    background:#F8F8F8;
+  }
+  
+  /* Typing indicator */
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    width: fit-content;
+  }
+  .typing-indicator span {
+    width: 5px;
+    height: 5px;
+    background: #666;
+    border-radius: 50%;
+    animation: bounce 1.3s linear infinite;
+    display: inline-block;
+  }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+  
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-4px); }
+  }
+  #salmon-form{display:flex;gap:8px;padding:12px;border-top:1px solid #eee;background:#fafafa}
+  #salmon-form input{flex:1;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px}
+  #salmon-form button{padding:12px 16px;border:0;border-radius:10px;background:#0F3446;color:#fff;cursor:pointer;font-size:15px;font-weight:500}
   </style>
 
   <div id="salmon-bubble">
     <button id="salmon-open" aria-label="Open chat"></button>
   </div>
 
-  <div id="salmon-panel" role="dialog" aria-label="Salmon & Co. Chat">
-    <div id="salmon-head">Salmon &amp; Co. — Chat</div>
-    <div id="salmon-msgs"></div>
+  <div id="salmon-panel" role="dialog" aria-label="Salmon & Co. Ai Chat">
+    <div id="salmon-head">Salmon &amp; Co. — Ai Assistant Chat</div>
+    <div id="salmon-msgs">
+    </div>
     <form id="salmon-form">
       <input id="salmon-input" placeholder="Ask about our services…" autocomplete="off" />
       <button>Send</button>
@@ -853,9 +1257,47 @@
 
   function add(role, text){
     const d = document.createElement('div');
-    d.style.whiteSpace='pre-wrap'; d.style.margin='6px 0';
-    d.innerHTML = `<strong>${role}:</strong> ${text}`;
-    msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
+    d.className = `msg ${role.toLowerCase() === 'bot' ? 'bot' : 'user'}`;
+    d.style.whiteSpace = 'pre-wrap';
+    const displayName = role === 'Bot' ? 'S.C.AI' : 'You';
+    
+    // Format lists if text contains bullet points
+    let formattedText = text;
+    if (text.includes('\n-')) {
+      formattedText = text.split('\n').map(line => {
+        if (line.trim().startsWith('-')) {
+          return '• ' + line.trim().substring(1);
+        }
+        return line;
+      }).join('\n');
+    }
+    
+    d.innerHTML = `
+      <div class="avatar">${displayName}</div>
+      <div class="content">${formattedText}</div>
+    `;
+    
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+    return d;
+  }
+
+  function addTypingIndicator() {
+    const d = document.createElement('div');
+    d.className = 'msg bot';
+    d.innerHTML = `
+      <div class="avatar">S.C.AI</div>
+      <div class="content">
+        <div class="typing-indicator">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    `;
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+    return d;
   }
 
   form.addEventListener('submit', async (e)=>{
@@ -863,18 +1305,31 @@
     const user = input.value.trim(); if(!user) return;
     add('You', user); input.value = '';
 
-    const res = await fetch(API, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ message: user, history })
-    });
-    const data = await res.json();
-    const bot = data.text || 'Sorry, no response.';
-    add('Bot', bot);
+    const typingIndicator = addTypingIndicator();
+    
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ message: user, history })
+      });
+      const data = await res.json();
+      let botResponse = data.text || 'Sorry, no response.';
+      
+      // Format the response to handle lists and formatting
+      botResponse = botResponse.replace(/\n\s*-\s*/g, '\n- '); // Normalize list formatting
+      
+      typingIndicator.remove();
+      add('Bot', botResponse);
+    } catch (error) {
+      typingIndicator.remove();
+      add('Bot', 'Sorry, I encountered an error. Please try again.');
+    }
 
     history.push({role:'user', content:user}, {role:'assistant', content:bot});
     if (history.length > 12) history.splice(0, history.length - 12);
   });
   </script>
+
 </body>
 </html>
